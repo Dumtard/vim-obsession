@@ -33,6 +33,7 @@ function! s:dispatch(bang, file) abort
     else
       let file = fnamemodify(expand(a:file), ':p')
     endif
+
     if !a:bang
       \ && file !~# '.session\.vim$'
       \ && filereadable(file)
@@ -40,6 +41,7 @@ function! s:dispatch(bang, file) abort
       \ && readfile(file, '', 1)[0] !=# 'let SessionLoad = 1'
       return 'mksession '.fnameescape(file)
     endif
+
     let g:this_obsession = file
     let error = s:persist()
     if empty(error)
@@ -120,10 +122,12 @@ function! ObsessionStatus(...) abort
 endfunction
 
 function! ObsessionLoad()
-  if argc() == 0
-    let g:this_obsession_load = getcwd() . '/.session.vim'
-    if (filereadable(g:this_obsession_load))
-      exe 'source ' g:this_obsession_load
+  if bufname('%') == ''
+    let file = getcwd() . '/.session.vim'
+    if (filereadable(file))
+      exe 'source ' .fnameescape(file)
+    else
+      call s:dispatch(0, file)
     endif
   endif
 endfunction
